@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
     std::vector<EdgeId> first_out;
     std::vector<NodeId> head;
 
-    std::cout << "Reading input ...";
+    std::cout << "Reading input ..." << std::flush;
     try {
         read_metis(input_path, first_out, head);
     } catch (std::runtime_error& e) {
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
     auto path = input_path.parent_path();
     auto first_out_path = path / (basename.string() + ".first_out");
     auto head_path = path / (basename.string() + ".head");
-    std::cout << "Writing first_out ...";
+    std::cout << "Writing first_out ..." << std::flush;
     try {
         save_vector(first_out_path, first_out);
     } catch (std::runtime_error& e) {
@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
     }
     std::cout << " finished." << std::endl;
 
-    std::cout << "Writing head ...";
+    std::cout << "Writing head ..." << std::flush;
     try {
         save_vector(head_path, head);
     } catch (std::runtime_error& e) {

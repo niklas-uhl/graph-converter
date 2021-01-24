@@ -106,14 +106,14 @@ void write_metis(const std::string& output, const std::vector<EdgeId>& first_out
         throw std::runtime_error("Could not open output file for reading.");
     }
 
-    std::cout << "Writing: ";
+    std::cout << "Writing: " << std::flush;
     out << first_out.size() - 1 << " " << head.size() / 2 << " " << 0 << std::endl;
     for (NodeId node = 0; node < first_out.size() - 1; node++) {
         auto begin = first_out[node];
         auto end = first_out[node + 1];
         for (EdgeId edge_id = begin; edge_id < end; edge_id++) {
             if (edge_id % 1'000'000 == 0) {
-                std::cout << edge_id / 1'000'000 << "M, ";
+                std::cout << edge_id / 1'000'000 << "M, " << std::flush;
             }
             if (edge_id != begin) {
                 out << " ";

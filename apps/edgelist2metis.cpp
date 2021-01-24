@@ -24,24 +24,29 @@ int main(int argc, char* argv[]) {
     std::vector<Edge> edges;
     NodeId max_id = 0;
     size_t edge_count = 0;
-    std::cout << "Parsed edges: ";
+    std::cout << "Parsed edges: " << std::flush;
     parse_edge_list(input_path, [&](Edge edge) {
         if (edge_count % 1'000'000 == 0) {
-            std::cout << edge_count / 1'000'000 << "M, ";
+            std::cout << edge_count / 1'000'000 << "M, " << std::flush;
         }
         max_id = std::max({max_id, edge.tail, edge.head});
+        if (edge.tail == edge.head) {
+            std::cout << "self loop, " << std::flush;
+            edge_count++;
+            return;
+        }
         edges.emplace_back(edge.tail, edge.head);
         edges.emplace_back(edge.head, edge.tail);
         edge_count++;
     });
     std::cout << std::endl;
-    std::cout << std::endl << "Sorting edges ...";
+    std::cout << std::endl << "Sorting edges ..." << std::flush;
     ips4o::parallel::sort(edges.begin(), edges.end(), [&](const Edge& e1, const Edge& e2) {
         return std::tie(e1.tail, e1.head) < std::tie(e2.tail, e2.head);
     });
     std::cout << " finished." << std::endl;
 
-    std::cout << "Removing duplicates ...";
+    std::cout << "Removing duplicates ..." << std::flush;
     auto last = std::unique(edges.begin(), edges.end());
     edges.erase(last, edges.end());
     std::cout << " finished." << std::endl;
@@ -55,6 +60,7 @@ int main(int argc, char* argv[]) {
     std::vector<NodeId> head;
     head.reserve(edges.size());
 
+    std::cout << "Edge list to adjacency array ..." << std::flush;
     NodeId current_tail = 0;
     first_out.push_back(0);
     for (auto& edge : edges) {
@@ -70,8 +76,9 @@ int main(int argc, char* argv[]) {
     }
     assert(first_out.size() == max_id + 2);
     edges.clear();
+    std::cout << " finished." << std::endl;
 
-    std::cout << "Remove dangling nodes ...";
+    std::cout << "Remove dangling nodes ..." << std::flush;
     std::vector<NodeId> node_mapping(first_out.size() - 1);
     NodeId compressed_node_id = 0;
     for (NodeId node_id = 0; node_id < first_out.size() - 1; node_id++) {

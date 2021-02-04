@@ -126,5 +126,36 @@ void write_metis(const std::string& output, const std::vector<EdgeId>& first_out
     std::cout << "Finished writing" << std::endl;
 }
 
+void write_metis(const std::string& output, EdgeId edge_count, const std::vector<std::vector<NodeId>>& neighbors) {
+    std::ofstream out(output);
+    if (out.fail()) {
+        throw std::runtime_error("Could not open output file for reading.");
+    }
+
+    std::cout << "Writing: " << std::flush;
+    out << neighbors.size() << " " << edge_count << " " << 0 << std::endl;
+    EdgeId edge_id = 0;
+    for (NodeId tail = 0; tail < neighbors.size(); tail++) {
+        for (size_t i = 0; i < neighbors[tail].size(); i++) {
+            if (edge_id % 1'000'000 == 0) {
+                std::cout << edge_id / 1'000'000 << "M, " << std::flush;
+            }
+            if (i != 0) {
+                out << " ";
+            }
+            NodeId head = neighbors[tail][i] + 1;
+            out << head;
+            edge_id++;
+
+        }
+        out << std::endl;
+    }
+    if (edge_id != edge_count * 2) {
+        throw std::runtime_error("edge count is incorrect");
+    }
+    std::cout << std::endl;
+    std::cout << "Finished writing" << std::endl;
+}
+
 
 #endif //GRAPH_CONVERTER_METIS_IO_H

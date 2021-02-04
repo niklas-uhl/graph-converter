@@ -35,8 +35,10 @@ int main(int argc, char* argv[]) {
             edge_count++;
             return;
         }
+        if (edge.head < edge.tail) {
+            std::swap(edge.tail, edge.head);
+        }
         edges.emplace_back(edge.tail, edge.head);
-        edges.emplace_back(edge.head, edge.tail);
         edge_count++;
     });
     std::cout << std::endl;
@@ -50,60 +52,51 @@ int main(int argc, char* argv[]) {
     auto last = std::unique(edges.begin(), edges.end());
     edges.erase(last, edges.end());
     std::cout << " finished." << std::endl;
-    assert(edges.size() % 2 == 0);
 
-    std::cout << "n:" << std::setw(20) << max_id + 1 << std::endl;
-    std::cout << "m:" << std::setw(20) << edges.size() / 2 << std::endl;
+    NodeId node_count = max_id + 1;
+    edge_count = edges.size();
+    std::cout << "n:" << std::setw(20) << node_count<< std::endl;
+    std::cout << "m:" << std::setw(20) << edge_count<< std::endl;
 
-    std::vector<EdgeId> first_out;
-    first_out.reserve(max_id + 1);
-    std::vector<NodeId> head;
-    head.reserve(edges.size());
-
-    std::cout << "Edge list to adjacency array ..." << std::flush;
-    NodeId current_tail = 0;
-    first_out.push_back(0);
-    for (auto& edge : edges) {
-        while (edge.tail != current_tail) {
-            first_out.push_back(head.size());
-            current_tail++;
-        }
-        head.emplace_back(edge.head);
+    std::cout << "Edge list to adjacency list ..." << std::flush;
+    std::vector<std::vector<NodeId>> neighbors(node_count);
+    for (Edge e : edges) {
+        neighbors[e.head].emplace_back(e.tail);
+        neighbors[e.tail].emplace_back(e.head);
     }
-    while (current_tail != max_id + 1) {
-        first_out.push_back(head.size());
-        ++current_tail;
-    }
-    assert(first_out.size() == max_id + 2);
     edges.clear();
     std::cout << " finished." << std::endl;
 
     std::cout << "Remove dangling nodes ..." << std::flush;
-    std::vector<NodeId> node_mapping(first_out.size() - 1);
+    std::vector<NodeId> node_mapping(neighbors.size());
     NodeId compressed_node_id = 0;
-    for (NodeId node_id = 0; node_id < first_out.size() - 1; node_id++) {
-        NodeId degree = first_out[node_id + 1] - first_out[node_id];
+    for (NodeId node_id = 0; node_id < neighbors.size(); node_id++) {
+        NodeId degree = neighbors[node_id].size();
         if (degree > 0) {
             node_mapping[node_id] = compressed_node_id;
-            first_out[compressed_node_id] = first_out[node_id];
+            neighbors[compressed_node_id] = std::move(neighbors[node_id]);
             compressed_node_id++;
         }
     }
-    first_out[compressed_node_id] = head.size();
-    first_out.erase(first_out.begin() + compressed_node_id + 1, first_out.end());
+
+    neighbors.erase(neighbors.begin() + compressed_node_id, neighbors.end());
     std::cout << " finished." << std::endl;
 
-    std::cout << "n:" << std::setw(20) <<  first_out.size() - 1 << std::endl;
+    std::cout << "n:" << std::setw(20) <<  neighbors.size() << std::endl;
 
-    tbb::parallel_for(tbb::blocked_range<size_t>(0, head.size()), [&](tbb::blocked_range<size_t> r) {
-        for(size_t i = r.begin(); i != r.end(); ++i) {
-            head[i] = node_mapping[head[i]];
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, neighbors.size()), [&](tbb::blocked_range<size_t> r) {
+        for (NodeId node = r.begin(); node != r.end(); node++) {
+            tbb::parallel_for(tbb::blocked_range<size_t>(0, neighbors[node].size()), [&](tbb::blocked_range<size_t> r) {
+                for (size_t i = r.begin(); i != r.end(); ++i) {
+                    neighbors[node][i] = node_mapping[neighbors[node][i]];
+                }
+            });
         }
     });
 
     auto basename = input_path.stem();
     auto path = input_path.parent_path();
     auto metis_path = path / (basename.string() + ".metis");
-    write_metis(metis_path, first_out, head);
+    write_metis(metis_path, edge_count, neighbors);
     return 0;
 }

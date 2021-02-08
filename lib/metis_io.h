@@ -151,6 +151,7 @@ void write_metis(const std::string& output, EdgeId edge_count, const std::vector
         out << std::endl;
     }
     if (edge_id != edge_count * 2) {
+        std::cerr << "edge count is incorrect, expected: " << edge_count * 2 << ", was: " << edge_id << std::endl;
         throw std::runtime_error("edge count is incorrect");
     }
     std::cout << std::endl;

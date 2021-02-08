@@ -24,6 +24,7 @@ int main(int argc, char* argv[]) {
     std::vector<Edge> edges;
     NodeId max_id = 0;
     size_t edge_count = 0;
+    size_t self_loops = 0;
     std::cout << "Parsed edges: " << std::flush;
     parse_edge_list(input_path, [&](Edge edge) {
         if (edge_count % 1'000'000 == 0) {
@@ -31,7 +32,8 @@ int main(int argc, char* argv[]) {
         }
         max_id = std::max({max_id, edge.tail, edge.head});
         if (edge.tail == edge.head) {
-            std::cout << "self loop, " << std::flush;
+            //std::cout << "self loop, " << std::flush;
+            self_loops++;
             edge_count++;
             return;
         }
@@ -55,8 +57,9 @@ int main(int argc, char* argv[]) {
 
     NodeId node_count = max_id + 1;
     edge_count = edges.size();
-    std::cout << "n:" << std::setw(20) << node_count<< std::endl;
-    std::cout << "m:" << std::setw(20) << edge_count<< std::endl;
+    std::cout << "n:" << std::setw(30) << node_count<< std::endl;
+    std::cout << "m:" << std::setw(30) << edge_count<< std::endl;
+    std::cout << "loops:" << std::setw(30) << self_loops << std::endl;
 
     std::cout << "Edge list to adjacency list ..." << std::flush;
     std::vector<std::vector<NodeId>> neighbors(node_count);
@@ -74,15 +77,20 @@ int main(int argc, char* argv[]) {
         NodeId degree = neighbors[node_id].size();
         if (degree > 0) {
             node_mapping[node_id] = compressed_node_id;
-            neighbors[compressed_node_id] = std::move(neighbors[node_id]);
+            //std::cout << "node " << node_id << " remapped to " << compressed_node_id << std::endl;
+            if (compressed_node_id != node_id) {
+                //prevent move to self
+                neighbors[compressed_node_id] = std::move(neighbors[node_id]);
+            }
             compressed_node_id++;
         }
     }
 
-    neighbors.erase(neighbors.begin() + compressed_node_id, neighbors.end());
+
+    neighbors.resize(compressed_node_id);
     std::cout << " finished." << std::endl;
 
-    std::cout << "n:" << std::setw(20) <<  neighbors.size() << std::endl;
+    std::cout << "n:" << std::setw(30) <<  neighbors.size() << std::endl;
 
     tbb::parallel_for(tbb::blocked_range<size_t>(0, neighbors.size()), [&](tbb::blocked_range<size_t> r) {
         for (NodeId node = r.begin(); node != r.end(); node++) {

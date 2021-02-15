@@ -12,3 +12,6 @@ find_package(Threads REQUIRED)
 
 target_link_libraries(edgelist2metis converter-lib ips4o)
 target_compile_definitions(edgelist2metis PRIVATE _REENTRANT)
+
+add_executable(reorder reorder.cpp)
+target_link_libraries(reorder PRIVATE converter-lib CLI11::CLI11)

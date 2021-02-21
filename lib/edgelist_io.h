@@ -20,6 +20,9 @@ void parse_edge_list(const std::string& input, EdgeFunc on_edge) {
     }
     std::string line;
     while (std::getline(stream, line)) {
+        if (line.rfind('#', 0) == 0) {
+            continue;
+        }
         std::stringstream sstream(line);
         NodeId tail;
         sstream >> tail;

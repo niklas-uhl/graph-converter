@@ -15,3 +15,6 @@ target_compile_definitions(edgelist2metis PRIVATE _REENTRANT)
 
 add_executable(reorder reorder.cpp)
 target_link_libraries(reorder PRIVATE converter-lib CLI11::CLI11)
+
+add_executable(apply-partition apply-partition.cpp)
+target_link_libraries(apply-partition PRIVATE converter-lib CLI11::CLI11)

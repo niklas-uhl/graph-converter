@@ -89,8 +89,9 @@ int main(int argc, char* argv[]) {
 
     auto basename = std::filesystem::path(partition_file).stem();
     basename = basename.stem();
-    auto partitioner = basename.extension();
-    auto suffix = partitioner.string() + "-" + std::to_string(max_partition + 1);
+    auto partitioner = basename.extension().string();
+    partitioner.erase(0, 1);
+    auto suffix = partitioner + "-" + std::to_string(max_partition + 1);
     if (output_format == "binary") {
         auto basename = input_path.stem();
         auto path = input_path.parent_path();
@@ -130,7 +131,7 @@ int main(int argc, char* argv[]) {
 
     basename = input_path.stem();
     auto path = input_path.parent_path();
-    auto ranges_path = path / (basename.string()  + suffix + ".ranges");
+    auto ranges_path = path / (basename.string() + "-" + suffix + ".ranges");
     std::ofstream out(ranges_path);
     if (out.fail()) {
         throw std::runtime_error("Could not open output file for reading.");

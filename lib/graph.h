@@ -30,8 +30,16 @@ public:
         first_out_.emplace_back(edge_count);
     }
 
+    NodeId degree(NodeId node) const {
+        return first_out_[node + 1] - first_out_[node];
+    }
+
     NodeId node_count() const {
         return first_out_.size() - 1;
+    }
+
+    NodeId edge_count() const {
+        return head_.size() / 2;
     }
 
     template<typename NodeFunc>

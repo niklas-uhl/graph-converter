@@ -18,3 +18,9 @@ target_link_libraries(reorder PRIVATE converter-lib CLI11::CLI11)
 
 add_executable(apply-partition apply-partition.cpp)
 target_link_libraries(apply-partition PRIVATE converter-lib CLI11::CLI11)
+
+add_executable(graph-info graph-info.cpp)
+target_link_libraries(graph-info converter-lib CLI11::CLI11)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(graph-info OpenMP::OpenMP_CXX)
+endif()

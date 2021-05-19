@@ -54,6 +54,7 @@ int main(int argc, char* argv[]) {
     std::cout << "max_degree=" << max_degree << std::endl;
     std::vector<NodeId> degree_frequency(max_degree + 1);
     std::vector<NodeId> out_degree_frequency(max_degree + 1);
+    std::vector<NodeId> in_degree_frequency(max_degree + 1);
     auto is_outgoing = [&](NodeId tail, NodeId head) {
         return std::pair(G.degree(tail), tail) < std::pair(G.degree(head), head);
     };
@@ -61,9 +62,12 @@ int main(int argc, char* argv[]) {
     for (NodeId node = 0; node < G.node_count(); node++) {
         NodeId degree = G.degree(node);
         NodeId out_degree = 0;
+        NodeId in_degree = 0;
         G.for_each_edge(node, [&](NodeId tail, NodeId head) {
             if (is_outgoing(tail, head)) {
                 out_degree++;
+            } else {
+                in_degree++;
             }
         });
         //std::stringstream out;
@@ -73,18 +77,25 @@ int main(int argc, char* argv[]) {
         degree_frequency[degree]++;
         #pragma omp atomic
         out_degree_frequency[out_degree]++;
+        #pragma omp atomic
+        in_degree_frequency[in_degree]++;
     }
 
     auto degree_output_filename = basename.string() + ".degree_freq";
     auto out_degree_output_filename = basename.string() + ".outdegree_freq";
+    auto in_degree_output_filename = basename.string() + ".indegree_freq";
     std::ofstream degree_output(path / degree_output_filename);
     std::ofstream out_degree_output(path / out_degree_output_filename);
+    std::ofstream in_degree_output(path / in_degree_output_filename);
     for (size_t i = 0; i < degree_frequency.size(); ++i) {
         if (degree_frequency[i] > 0)  {
             degree_output << i << " " << degree_frequency[i] << std::endl;
         }
         if (out_degree_frequency[i] > 0)  {
             out_degree_output << i << " " << out_degree_frequency[i] << std::endl;
+        }
+        if (in_degree_frequency[i] > 0)  {
+            in_degree_output << i << " " << in_degree_frequency[i] << std::endl;
         }
     }
 }

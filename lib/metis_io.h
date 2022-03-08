@@ -5,10 +5,12 @@
 #ifndef GRAPH_CONVERTER_METIS_IO_H
 #define GRAPH_CONVERTER_METIS_IO_H
 
+#include <numeric>
 #include <sstream>
 #include <fstream>
 #include <vector>
 #include "types.h"
+#include <iostream>
 
 template<typename HeaderFunc, typename NodeFunc, typename EdgeFunc>
 void read_metis(const std::string& input, HeaderFunc on_header, NodeFunc on_node, EdgeFunc on_edge) {
@@ -126,14 +128,15 @@ void write_metis(const std::string& output, const std::vector<EdgeId>& first_out
     std::cout << "Finished writing" << std::endl;
 }
 
-void write_metis(const std::string& output, EdgeId edge_count, const std::vector<std::vector<NodeId>>& neighbors) {
+inline void write_metis(const std::string& output, const std::vector<std::vector<NodeId>>& neighbors) {
     std::ofstream out(output);
     if (out.fail()) {
         throw std::runtime_error("Could not open output file for reading.");
     }
 
     std::cout << "Writing: " << std::flush;
-    out << neighbors.size() << " " << edge_count << " " << 0 << std::endl;
+    EdgeId edge_count = std::accumulate(neighbors.begin(), neighbors.end(), 0, [](const auto& acc, const auto& item) {return acc + item.size();});
+    out << neighbors.size() << " " << edge_count / 2 << " " << 0 << std::endl;
     EdgeId edge_id = 0;
     for (NodeId tail = 0; tail < neighbors.size(); tail++) {
         for (size_t i = 0; i < neighbors[tail].size(); i++) {
@@ -150,7 +153,7 @@ void write_metis(const std::string& output, EdgeId edge_count, const std::vector
         }
         out << std::endl;
     }
-    if (edge_id != edge_count * 2) {
+    if (edge_id != edge_count) {
         std::cerr << "edge count is incorrect, expected: " << edge_count * 2 << ", was: " << edge_id << std::endl;
         throw std::runtime_error("edge count is incorrect");
     }

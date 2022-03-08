@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
         auto basename = input_path.stem();
         auto path = input_path.parent_path();
         auto metis_path = path / (basename.string() + "-" + suffix + ".metis");
-        write_metis(metis_path, edge_count, G.to_neighbors());
+        write_metis(metis_path, G.to_neighbors());
     } else {
         throw std::runtime_error("This should not happen");
     }

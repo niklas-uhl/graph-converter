@@ -13,14 +13,14 @@
 #include "types.h"
 
 template<typename EdgeFunc>
-void parse_edge_list(const std::string& input, EdgeFunc on_edge) {
+void parse_edge_list(const std::string& input, EdgeFunc on_edge, std::string comment_prefix = "#") {
     std::ifstream stream(input);
     if (stream.fail()) {
         throw std::runtime_error("Could not open input file for reading.");
     }
     std::string line;
     while (std::getline(stream, line)) {
-        if (line.rfind('#', 0) == 0) {
+        if (line.rfind(comment_prefix, 0) == 0) {
             continue;
         }
         std::stringstream sstream(line);

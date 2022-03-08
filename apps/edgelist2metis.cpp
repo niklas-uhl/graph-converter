@@ -4,10 +4,13 @@
 #include <iostream>
 #include <algorithm>
 #include <thread>
+#include <iomanip>
 
 #include <ips4o.hpp>
 #include <tbb/parallel_for.h>
+#include <CLI/CLI.hpp>
 
+#include "CLI/App.hpp"
 #include "types.h"
 #include "metis_io.h"
 #include "vector_io.h"
@@ -18,8 +21,15 @@ int main(int argc, char* argv[]) {
         std::cerr << "Usage: " << argv[0] << "[--sort] INPUT" << std::endl;
         return 1;
     }
+    CLI::App app;
+    std::string input;
+    app.add_option("INPUT", input)
+        ->required(true);
+    std::string comment = "#";
+    app.add_option("-c,--comment", comment);
+    CLI11_PARSE(app, argc, argv)
 
-    auto input_path = std::filesystem::path(argv[argc - 1]);
+    auto input_path = std::filesystem::path(input);
 
     std::vector<Edge> edges;
     NodeId max_id = 0;
@@ -42,7 +52,7 @@ int main(int argc, char* argv[]) {
         }
         edges.emplace_back(edge.tail, edge.head);
         edge_count++;
-    });
+    }, comment);
     std::cout << std::endl;
     std::cout << std::endl << "Sorting edges ..." << std::flush;
     ips4o::parallel::sort(edges.begin(), edges.end(), [&](const Edge& e1, const Edge& e2) {
@@ -88,7 +98,7 @@ int main(int argc, char* argv[]) {
 
 
     neighbors.resize(compressed_node_id);
-    std::cout << " finished." << std::endl;
+    std::cout << " finished. Removed " << neighbors.size() - compressed_node_id << " nodes." << std::endl;
 
     std::cout << "n:" << std::setw(30) <<  neighbors.size() << std::endl;
 
@@ -105,6 +115,6 @@ int main(int argc, char* argv[]) {
     auto basename = input_path.stem();
     auto path = input_path.parent_path();
     auto metis_path = path / (basename.string() + ".metis");
-    write_metis(metis_path, edge_count, neighbors);
+    write_metis(metis_path, neighbors);
     return 0;
 }

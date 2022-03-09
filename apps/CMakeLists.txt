@@ -6,6 +6,13 @@ if(OpenMP_CXX_FOUND)
 endif()
 target_compile_features(metis2binary PUBLIC cxx_std_17)
 
+add_executable(binary2edgelist binary2edgelist.cpp)
+target_link_libraries(binary2edgelist converter-lib)
+if(OpenMP_CXX_FOUND)
+  target_link_libraries(binary2edgelist OpenMP::OpenMP_CXX)
+endif()
+target_compile_features(binary2edgelist PUBLIC cxx_std_17)
+
 add_executable(edgelist2metis edgelist2metis.cpp)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

@@ -43,3 +43,7 @@ if(OpenMP_CXX_FOUND)
     target_link_libraries(frequency-plot OpenMP::OpenMP_CXX)
 endif()
 target_compile_features(frequency-plot PUBLIC cxx_std_17)
+
+add_executable(zedgelist2binary zedgelist2binary.cpp)
+target_link_libraries(zedgelist2binary PRIVATE Boost::iostreams stxxl OpenMP::OpenMP_CXX)
+

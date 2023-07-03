@@ -27,6 +27,8 @@ int main(int argc, char* argv[]) {
         ->required(true);
     std::string comment = "#";
     app.add_option("-c,--comment", comment);
+    std::size_t lines_to_skip = 0;
+    app.add_option("-s,--lines-to-skip", lines_to_skip);
     CLI11_PARSE(app, argc, argv)
 
     auto input_path = std::filesystem::path(input);
@@ -52,7 +54,7 @@ int main(int argc, char* argv[]) {
         }
         edges.emplace_back(edge.tail, edge.head);
         edge_count++;
-    }, comment);
+    }, comment, lines_to_skip);
     std::cout << std::endl;
     std::cout << std::endl << "Sorting edges ..." << std::flush;
     ips4o::parallel::sort(edges.begin(), edges.end(), [&](const Edge& e1, const Edge& e2) {
